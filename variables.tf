@@ -28,13 +28,18 @@ variable "azs" {
   type = "list"
   default = ["us-east-1a", "us-east-1b", "us-east-1c"]
 }
-variable "environment" { default = "dev" }
+variable "cidrs" {
+  description = " CIDRS blocks for subnets "
+  type = "list"
+  default = ["10.1.1.0/24", "10.1.2.0/24", "10.1.3.0/24"]
+}
+variable "env" { }
 variable "instance_type" {
   type = "map"
   default = {
     dev = "t2.nano"
     test = "t2.micro"
-    prod = "t2.medium"
+    prod = "t2.micro"
     }
 }
 

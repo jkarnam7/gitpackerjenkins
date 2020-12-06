@@ -10,8 +10,8 @@ resource "aws_vpc" "default" {
     enable_dns_hostnames = true
     tags = {
         Name = "${var.vpc_name}"
-	Owner = "Sreeharsha Veerapalli"
-	environment = "${var.environment}"
+	Owner = "KJ"
+	#environment = "${var.env}"
     }
 }
 
@@ -22,36 +22,37 @@ resource "aws_internet_gateway" "default" {
     }
 }
 
-resource "aws_subnet" "subnet1-public" {
+resource "aws_subnet" "subnets" {
+    count = "${length(var.cidrs)}"
     vpc_id = "${aws_vpc.default.id}"
-    cidr_block = "${var.public_subnet1_cidr}"
-    availability_zone = "us-east-1a"
-
+    cidr_block = "${element(var.cidrs, count.index)}"
+    availability_zone = "${element(var.azs, count.index)}"
+    map_public_ip_on_launch = true
     tags = {
-        Name = "${var.public_subnet1_name}"
+        Name = "${var.vpc_name}-Subnet-${count.index+1}"
     }
 }
 
-resource "aws_subnet" "subnet2-public" {
-    vpc_id = "${aws_vpc.default.id}"
-    cidr_block = "${var.public_subnet2_cidr}"
-    availability_zone = "us-east-1b"
+# resource "aws_subnet" "subnet2-public" {
+#     vpc_id = "${aws_vpc.default.id}"
+#     cidr_block = "${var.public_subnet2_cidr}"
+#     availability_zone = "us-east-1b"
 
-    tags = {
-        Name = "${var.public_subnet2_name}"
-    }
-}
+#     tags = {
+#         Name = "${var.public_subnet2_name}"
+#     }
+# }
 
-resource "aws_subnet" "subnet3-public" {
-    vpc_id = "${aws_vpc.default.id}"
-    cidr_block = "${var.public_subnet3_cidr}"
-    availability_zone = "us-east-1c"
+# resource "aws_subnet" "subnet3-public" {
+#     vpc_id = "${aws_vpc.default.id}"
+#     cidr_block = "${var.public_subnet3_cidr}"
+#     availability_zone = "us-east-1c"
 
-    tags = {
-        Name = "${var.public_subnet3_name}"
-    }
+#     tags = {
+#         Name = "${var.public_subnet3_name}"
+#     }
 	
-}
+# }
 
 
 resource "aws_route_table" "terraform-public" {
@@ -68,7 +69,8 @@ resource "aws_route_table" "terraform-public" {
 }
 
 resource "aws_route_table_association" "terraform-public" {
-    subnet_id = "${aws_subnet.subnet1-public.id}"
+    count = "${length(var.cidrs)}"
+    subnet_id = "${element(aws_subnet.subnets.*.id, count.index)}"
     route_table_id = "${aws_route_table.terraform-public.id}"
 }
 
@@ -99,26 +101,27 @@ resource "aws_security_group" "allow_all" {
 # }
 
 
-# resource "aws_instance" "web-1" {
-#     ami = var.imagename
-#     #ami = "ami-0d857ff0f5fc4e03b"
-#     #ami = "${data.aws_ami.my_ami.id}"
-#     availability_zone = "us-east-1a"
-#     instance_type = "t2.micro"
-#     key_name = "LaptopKey"
-#     subnet_id = "${aws_subnet.subnet1-public.id}"
-#     vpc_security_group_ids = ["${aws_security_group.allow_all.id}"]
-#     associate_public_ip_address = true	
-#     tags = {
-#         Name = "Server-1"
-#         Env = "Prod"
-#         Owner = "Sree"
-# 	CostCenter = "ABCD"
-#     }
-# }
+resource "aws_instance" "web-1" {
+    #ami = var.imagename
+    ami = "ami-04d29b6f966df153"
+    #ami = "${data.aws_ami.my_ami.id}"
+    count = "${var.env == "prod" ? 1 : 1}"
+    #availability_zone = "${element(aws_subnet.subnets.*.id, count.index)}"
+    instance_type = "t2.micro"
+    key_name = "CommonKey"
+    subnet_id = "${element(aws_subnet.subnets.*.id, count.index)}"
+    vpc_security_group_ids = ["${aws_security_group.allow_all.id}"]
+    associate_public_ip_address = true	
+    tags = {
+        Name = "${var.vpc_name}-Subnet-${count.index+1}"
+        Env = "Prod"
+         Owner = "KJ"
+	# CostCenter = "ABCD"
+    }
+}
 
 ##output "ami_id" {
-#  value = "${data.aws_ami.my_ami.id}"
+#  value = "${data.aws_ami.my_ami.id}" 
 #}
 #!/bin/bash
 # echo "Listing the files in the repo."
