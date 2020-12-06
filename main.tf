@@ -103,9 +103,9 @@ resource "aws_security_group" "allow_all" {
 
 resource "aws_instance" "web-1" {
     #ami = var.imagename
-    ami = "ami-04d29b6f966df153"
+    ami = "ami-04d29b6f966df1537"
     #ami = "${data.aws_ami.my_ami.id}"
-    count = "${var.env == "prod" ? 1 : 1}"
+    count = "${var.env=="prod" ? 1 : 1}"
     #availability_zone = "${element(aws_subnet.subnets.*.id, count.index)}"
     instance_type = "t2.micro"
     key_name = "CommonKey"
