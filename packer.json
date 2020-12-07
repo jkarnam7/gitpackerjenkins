@@ -6,7 +6,7 @@
       "region": "us-east-1",
       "source_ami":"ami-04d29b6f966df1537",
       "instance_type":"t2.micro",
-      "vpc_id": "vpc-074a269b4efaea99",
+      "vpc_id": "vpc-074a269b4efaea991",
       "subnet_id": "subnet-00ccaa63d1287706d"
     },
     "_comment1" : "packer build -var \"aws_secret_key=foo\" template.json",
